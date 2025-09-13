@@ -24,25 +24,25 @@ export default function Layout({ children }: LayoutProps) {
                 <School className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-lg sm:text-xl font-semibold text-gray-900">
                   Madrasa Rahmania Arabia
                 </h1>
-                <p className="text-sm text-gray-500">Kambipur Trust</p>
+                <p className="text-xs sm:text-sm text-gray-500">Kambipur Trust</p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
                 <Users className="h-4 w-4" />
-                <span>Welcome, {user?.email}</span>
+                <span className="truncate max-w-32 sm:max-w-none">Welcome, {user?.email}</span>
               </div>
               
               <button
                 onClick={handleSignOut}
-                className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <LogOut className="h-4 w-4" />
-                <span>Sign Out</span>
+                <span className="hidden sm:inline">Sign Out</span>
               </button>
             </div>
           </div>
