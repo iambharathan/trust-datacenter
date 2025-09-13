@@ -14,7 +14,7 @@ A modern React application for managing student information and documents for th
 
 - **Frontend**: React 18 with TypeScript
 - **Backend**: Supabase (PostgreSQL database, authentication, file storage)
-- **Styling**: Tailwind CSS
+- **Styling**: Custom CSS (Tailwind-like utilities)
 - **Icons**: Lucide React
 - **Routing**: React Router DOM
 
@@ -29,7 +29,8 @@ A modern React application for managing student information and documents for th
 ### 1. Clone and Install Dependencies
 
 ```bash
-cd madrasa-trust-app
+git clone https://github.com/iambharathan/trust-datacenter.git
+cd trust-datacenter
 npm install
 ```
 
@@ -97,10 +98,17 @@ The application will be available at `http://localhost:3000`
 ## File Upload
 
 The application supports uploading various file types:
-- Images: JPG, PNG, GIF
+- Images: JPG, PNG, GIF, WebP
 - Documents: PDF, DOC, DOCX
 
 Files are stored securely in Supabase Storage and can be viewed/downloaded from the student detail page.
+
+## Image Display Features
+
+- **Full Image Preview**: Images display completely without cropping
+- **Click to View Full Size**: Click any image to open in new tab
+- **Proper Aspect Ratio**: Images maintain original proportions
+- **Error Handling**: Fallback display if images fail to load
 
 ## Security
 
@@ -121,6 +129,10 @@ To deploy the application:
 2. Deploy the `build` folder to your hosting provider (Vercel, Netlify, etc.)
 
 3. Make sure to configure environment variables if you move the Supabase configuration to environment variables
+
+## Repository
+
+This project is hosted on GitHub: [https://github.com/iambharathan/trust-datacenter](https://github.com/iambharathan/trust-datacenter)
 
 ## Support
 
