@@ -22,6 +22,9 @@ import StudentDetail from './components/StudentDetail'
 import StudentFees from './components/StudentFees'
 import MonthlyRegister from './components/MonthlyRegister'
 import PendingDues from './components/PendingDues'
+import Reminders from './components/Reminders'
+import AdminNotices from './components/AdminNotices'
+import AdminSettings from './components/AdminSettings'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -156,6 +159,36 @@ function AppRoutes() {
           <PrivateRoute>
             <AdminLayout>
               <PendingDues />
+            </AdminLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin/reminders"
+        element={
+          <PrivateRoute>
+            <AdminLayout>
+              <Reminders />
+            </AdminLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin/notices"
+        element={
+          <PrivateRoute>
+            <AdminLayout>
+              <AdminNotices />
+            </AdminLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <PrivateRoute>
+            <AdminLayout>
+              <AdminSettings />
             </AdminLayout>
           </PrivateRoute>
         }
