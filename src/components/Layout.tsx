@@ -1,6 +1,7 @@
 import React from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { LogOut, School, Users } from 'lucide-react'
+import { LogOut, School, Users, GraduationCap, Shield, Wrench } from 'lucide-react'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -8,9 +9,14 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const { signOut, user } = useAuth()
+  const location = useLocation()
 
   const handleSignOut = async () => {
     await signOut()
+  }
+
+  const isActive = (path: string) => {
+    return location.pathname.startsWith(path)
   }
 
   return (
@@ -48,6 +54,37 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </div>
       </header>
+
+      {/* Navigation */}
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            <Link
+              to="/students"
+              className={`flex items-center space-x-2 px-3 py-4 text-sm font-medium border-b-2 transition-colors ${
+                isActive('/students')
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              <span>Students</span>
+            </Link>
+            
+            <Link
+              to="/staff"
+              className={`flex items-center space-x-2 px-3 py-4 text-sm font-medium border-b-2 transition-colors ${
+                isActive('/staff')
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <GraduationCap className="h-4 w-4" />
+              <span>Staff</span>
+            </Link>
+          </div>
+        </div>
+      </nav>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

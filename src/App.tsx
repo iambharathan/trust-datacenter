@@ -2,10 +2,14 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Login from './components/Login'
+import Signup from './components/Signup'
 import Layout from './components/Layout'
 import StudentsList from './components/StudentsList'
 import StudentForm from './components/StudentForm'
 import StudentDetail from './components/StudentDetail'
+import StaffList from './components/StaffList'
+import StaffForm from './components/StaffForm'
+import StaffDetail from './components/StaffDetail'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -43,6 +47,15 @@ function AppRoutes() {
         element={
           <PublicRoute>
             <Login />
+          </PublicRoute>
+        }
+      />
+      
+      <Route
+        path="/signup"
+        element={
+          <PublicRoute>
+            <Signup />
           </PublicRoute>
         }
       />
@@ -86,6 +99,50 @@ function AppRoutes() {
           <PrivateRoute>
             <Layout>
               <StudentForm />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      
+      <Route
+        path="/staff"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <StaffList />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      
+      <Route
+        path="/staff/new"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <StaffForm />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      
+      <Route
+        path="/staff/:id"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <StaffDetail />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      
+      <Route
+        path="/staff/:id/edit"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <StaffForm />
             </Layout>
           </PrivateRoute>
         }

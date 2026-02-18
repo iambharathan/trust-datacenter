@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { LogIn, School } from 'lucide-react'
 
@@ -92,9 +93,15 @@ export default function Login() {
         </form>
 
         <div className="mt-6 text-center text-sm text-gray-600">
-          <p>Contact administrator for account access</p>
+          <p>
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-blue-600 hover:text-blue-800 font-medium">
+              Sign Up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
   )
 }
+

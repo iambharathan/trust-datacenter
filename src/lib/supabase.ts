@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = 'https://wonhvsdhdprbwmickxip.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indvbmh2c2RoZHByYndtaWNreGlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NDY2NTAsImV4cCI6MjA3MzMyMjY1MH0.2sBEiBdjJ5mCH3jJQvb8mzZazy4oithfx_QOz_pI6ok'
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://moymmjmzugeojsbhenkj.supabase.co'
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1veW1tam16dWdlb2pzYmhlbmtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNzY1MTQsImV4cCI6MjA4Njk1MjUxNH0.LD7fLMe3gE2JS5mFk2gtYIPUDUJgAjRipzG-W_fbOMQ'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
@@ -24,6 +24,32 @@ export interface Student {
 export interface StudentDocument {
   id: string
   student_id: string
+  document_name: string
+  document_url: string
+  uploaded_at: string
+}
+
+export interface Staff {
+  id: string
+  name: string
+  staff_type: 'teacher' | 'servant' | 'trustee'
+  position?: string
+  department?: string
+  phone: string
+  email?: string
+  address: string
+  salary?: number
+  joining_date: string
+  qualification?: string
+  experience_years: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface StaffDocument {
+  id: string
+  staff_id: string
   document_name: string
   document_url: string
   uploaded_at: string
