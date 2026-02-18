@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Save, Loader } from 'lucide-react'
-import { supabase, Student, ClassLevel, AcademicYear, STUDENT_STATUSES } from '../lib/supabase'
+import { supabase, ClassLevel, AcademicYear, STUDENT_STATUSES } from '../lib/supabase'
 
 export default function StudentForm() {
   const navigate = useNavigate()
@@ -35,6 +35,7 @@ export default function StudentForm() {
     if (isEdit) {
       fetchStudent()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   const fetchInitialData = async () => {

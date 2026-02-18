@@ -7,8 +7,6 @@ import {
   Edit, 
   Trash2, 
   IndianRupee,
-  Filter,
-  Download,
   Users
 } from 'lucide-react'
 import { supabase, Student, STUDENT_STATUSES } from '../lib/supabase'

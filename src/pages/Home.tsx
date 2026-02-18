@@ -13,8 +13,7 @@ import {
   X,
   ChevronRight,
   Heart,
-  Award,
-  Target
+  Award
 } from 'lucide-react'
 
 export default function Home() {
