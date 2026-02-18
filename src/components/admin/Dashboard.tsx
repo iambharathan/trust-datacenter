@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { 
-  Users, 
-  IndianRupee, 
-  AlertCircle, 
-  TrendingUp,
-  Calendar,
-  Bell,
-  ArrowUpRight,
-  ArrowDownRight
-} from 'lucide-react'
+import { Users, IndianRupee, AlertCircle, TrendingUp, Calendar, Bell, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { supabase, Student, FeePayment } from '../../lib/supabase'
 
 interface DashboardStats {

@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  IndianRupee, 
-  Calendar, 
-  CheckCircle, 
-  Clock, 
-  AlertCircle,
-  Plus,
-  Send,
-  Download
-} from 'lucide-react'
+import { ArrowLeft, CheckCircle, Clock, AlertCircle, Plus } from 'lucide-react'
 import { supabase, Student, FeePayment, MONTHS, PAYMENT_MODES, PAYMENT_STATUSES } from '../lib/supabase'
 
 export default function StudentFees() {

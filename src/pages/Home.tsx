@@ -1,20 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { 
-  GraduationCap, 
-  BookOpen, 
-  Users, 
-  Phone, 
-  MapPin, 
-  Clock,
-  Star,
-  ArrowRight,
-  Menu,
-  X,
-  ChevronRight,
-  Heart,
-  Award
-} from 'lucide-react'
+import { GraduationCap, BookOpen, Users, Phone, MapPin, Clock, Star, ArrowRight, Menu, X, ChevronRight, Heart, Award } from 'lucide-react'
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)

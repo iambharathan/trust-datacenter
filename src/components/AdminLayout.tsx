@@ -1,21 +1,7 @@
 import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { 
-  LogOut, 
-  GraduationCap, 
-  Users, 
-  IndianRupee, 
-  LayoutDashboard,
-  Bell,
-  Settings,
-  FileText,
-  MessageSquare,
-  Menu,
-  X,
-  ChevronRight,
-  Home
-} from 'lucide-react'
+import { LogOut, GraduationCap, Users, IndianRupee, LayoutDashboard, Bell, Settings, FileText, MessageSquare, Menu, ChevronRight, Home } from 'lucide-react'
 
 interface AdminLayoutProps {
   children: React.ReactNode

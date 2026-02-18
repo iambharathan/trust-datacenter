@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Calendar, 
-  Download, 
-  Filter, 
-  Search,
-  CheckCircle,
-  XCircle,
-  Clock
-} from 'lucide-react'
-import { supabase, Student, FeePayment, MONTHS, PAYMENT_STATUSES } from '../lib/supabase'
+import { Download, Search, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { supabase, Student, FeePayment, MONTHS } from '../lib/supabase'
 
 interface RegisterEntry {
   student: Student

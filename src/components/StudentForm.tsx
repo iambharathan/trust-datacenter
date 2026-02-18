@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Save, Loader } from 'lucide-react'
 import { supabase, ClassLevel, AcademicYear, STUDENT_STATUSES } from '../lib/supabase'

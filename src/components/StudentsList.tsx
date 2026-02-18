@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { 
-  Plus, 
-  Search, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  IndianRupee,
-  Users
-} from 'lucide-react'
+import { Plus, Search, Eye, Edit, Trash2, IndianRupee, Users } from 'lucide-react'
 import { supabase, Student, STUDENT_STATUSES } from '../lib/supabase'
 
 export default function StudentsList() {
