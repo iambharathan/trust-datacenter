@@ -1,45 +1,28 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { supabase, Student, StudentDocument } from '../lib/supabase'
-import { ArrowLeft, Edit, Upload, FileText, Download, Trash2, Calendar, Phone, Mail, MapPin, User, Users } from 'lucide-react'
+import { supabase, Student, FeePayment } from '../lib/supabase'
+import { ArrowLeft, Edit, Calendar, Phone, Mail, MapPin, User, CreditCard, BookOpen, CheckCircle, XCircle, Clock } from 'lucide-react'
 
 export default function StudentDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [student, setStudent] = useState<Student | null>(null)
-  const [documents, setDocuments] = useState<StudentDocument[]>([])
+  const [payments, setPayments] = useState<FeePayment[]>([])
   const [loading, setLoading] = useState(true)
-  const [uploadLoading, setUploadLoading] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (id) {
-      fetchStudentData(id)
-    }
+    if (id) { fetchStudentData(id) }
   }, [id])
 
   const fetchStudentData = async (studentId: string) => {
     try {
-      // Fetch student details
-      const { data: studentData, error: studentError } = await supabase
-        .from('students')
-        .select('*')
-        .eq('id', studentId)
-        .single()
-
+      const { data: studentData, error: studentError } = await supabase.from('students').select('*').eq('id', studentId).single()
       if (studentError) throw studentError
       setStudent(studentData)
-
-      // Fetch student documents
-      const { data: documentsData, error: documentsError } = await supabase
-        .from('student_documents')
-        .select('*')
-        .eq('student_id', studentId)
-        .order('uploaded_at', { ascending: false })
-
-      if (documentsError) throw documentsError
-      setDocuments(documentsData || [])
-
+      const { data: paymentsData, error: paymentsError } = await supabase.from('fee_payments').select('*').eq('student_id', studentId).order('year', { ascending: false }).limit(12)
+      if (paymentsError) throw paymentsError
+      setPayments(paymentsData || [])
     } catch (error: any) {
       setError(error.message)
     } finally {
@@ -47,355 +30,140 @@ export default function StudentDetail() {
     }
   }
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file || !student) return
-
-    setUploadLoading(true)
-    setError('')
-
-    try {
-      // Upload file to Supabase Storage
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${student.id}/${Date.now()}.${fileExt}`
-      
-      const { error: uploadError } = await supabase.storage
-        .from('student-documents')
-        .upload(fileName, file)
-
-      if (uploadError) throw uploadError
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('student-documents')
-        .getPublicUrl(fileName)
-
-      // Save document record to database
-      const documentRecord = {
-        id: crypto.randomUUID(),
-        student_id: student.id,
-        document_name: file.name,
-        document_url: urlData.publicUrl,
-        uploaded_at: new Date().toISOString()
-      }
-
-      const { error: dbError } = await supabase
-        .from('student_documents')
-        .insert([documentRecord])
-
-      if (dbError) throw dbError
-
-      // Update local state
-      setDocuments(prev => [documentRecord, ...prev])
-
-    } catch (error: any) {
-      setError(error.message)
-    } finally {
-      setUploadLoading(false)
-      // Reset file input
-      event.target.value = ''
-    }
+  const getStatusColor = (status: string) => {
+    if (status === 'active') return 'bg-green-100 text-green-800'
+    if (status === 'left') return 'bg-red-100 text-red-800'
+    if (status === 'completed') return 'bg-blue-100 text-blue-800'
+    return 'bg-gray-100 text-gray-800'
   }
 
-  const deleteDocument = async (documentId: string, documentUrl: string) => {
-    if (!window.confirm('Are you sure you want to delete this document?')) {
-      return
-    }
+  const getPaymentStatusIcon = (status: string) => {
+    if (status === 'paid') return <CheckCircle className="w-4 h-4 text-green-600" />
+    if (status === 'pending') return <XCircle className="w-4 h-4 text-red-600" />
+    if (status === 'partial') return <Clock className="w-4 h-4 text-amber-600" />
+    return null
+  }
 
-    try {
-      // Extract file path from URL
-      const url = new URL(documentUrl)
-      const filePath = url.pathname.split('/').slice(-2).join('/')
-
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('student-documents')
-        .remove([filePath])
-
-      if (storageError) throw storageError
-
-      // Delete from database
-      const { error: dbError } = await supabase
-        .from('student_documents')
-        .delete()
-        .eq('id', documentId)
-
-      if (dbError) throw dbError
-
-      // Update local state
-      setDocuments(prev => prev.filter(doc => doc.id !== documentId))
-
-    } catch (error: any) {
-      setError(error.message)
-    }
+  const getPaymentStatusColor = (status: string) => {
+    if (status === 'paid') return 'bg-green-100 text-green-800'
+    if (status === 'pending') return 'bg-red-100 text-red-800'
+    if (status === 'partial') return 'bg-amber-100 text-amber-800'
+    return 'bg-gray-100 text-gray-800'
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    )
+    return (<div className="flex justify-center items-center min-h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div></div>)
+  }
+
+  if (error) {
+    return (<div className="bg-red-50 border border-red-200 rounded-lg p-4"><p className="text-red-600">Error: {error}</p><button onClick={() => navigate('/admin/students')} className="mt-2 text-red-600 underline">Back</button></div>)
   }
 
   if (!student) {
-    return (
-      <div className="text-center py-12">
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Student not found</h3>
-        <Link to="/students" className="text-blue-600 hover:text-blue-700">
-          Back to Students
-        </Link>
-      </div>
-    )
+    return (<div className="text-center py-8"><p className="text-gray-600">Student not found</p><Link to="/admin/students" className="text-emerald-600 underline">Back</Link></div>)
   }
+
+  const pendingPayments = payments.filter(p => p.payment_status === 'pending' || p.payment_status === 'partial')
+  const totalPending = pendingPayments.reduce((sum, p) => {
+    if (p.payment_status === 'pending') return sum + p.amount
+    if (p.payment_status === 'partial') return sum + (p.amount - (p.partial_amount || 0))
+    return sum
+  }, 0)
+
+  const feesLink = '/admin/students/' + student.id + '/fees'
+  const editLink = '/admin/students/' + student.id + '/edit'
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => navigate('/students')}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            <span>Back to Students</span>
-          </button>
-        </div>
-        
-        <Link
-          to={`/students/${student.id}/edit`}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
-        >
-          <Edit className="h-5 w-5" />
-          <span>Edit Student</span>
+      <div className="mb-6">
+        <Link to="/admin/students" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
+          <ArrowLeft className="w-4 h-4 mr-1" />Back to Students
         </Link>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Student Information */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">{student.name}</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Age</p>
-                    <p className="text-gray-900">{student.age} years old</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <User className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Class</p>
-                    <p className="text-gray-900">{student.class}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Admission Date</p>
-                    <p className="text-gray-900">
-                      {new Date(student.admission_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Users className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Father's Name</p>
-                    <p className="text-gray-900">{student.father_name}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <Users className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Mother's Name</p>
-                    <p className="text-gray-900">{student.mother_name}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p className="text-gray-900">{student.phone}</p>
-                  </div>
-                </div>
-
-                {student.email && (
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-500">Email</p>
-                      <p className="text-gray-900">{student.email}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <div className="flex items-start space-x-3">
-                <MapPin className="h-5 w-5 text-gray-400 mt-1" />
-                <div>
-                  <p className="text-sm text-gray-500">Address</p>
-                  <p className="text-gray-900">{student.address}</p>
-                </div>
-              </div>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{student.full_name}</h1>
+            <p className="text-gray-600">Roll No: {student.roll_number} | {student.class_level}</p>
+          </div>
+          <div className="flex gap-2">
+            <Link to={feesLink} className="inline-flex items-center px-4 py-2 border border-emerald-600 text-emerald-600 rounded-lg hover:bg-emerald-50">
+              <CreditCard className="w-4 h-4 mr-2" />Manage Fees
+            </Link>
+            <Link to={editLink} className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+              <Edit className="w-4 h-4 mr-2" />Edit
+            </Link>
           </div>
         </div>
-
-        {/* Documents Section */}
-        <div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Documents</h3>
-              <label className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 cursor-pointer flex items-center space-x-2 text-sm">
-                {uploadLoading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                ) : (
-                  <Upload className="h-4 w-4" />
-                )}
-                <span>{uploadLoading ? 'Uploading...' : 'Upload'}</span>
-                <input
-                  type="file"
-                  onChange={handleFileUpload}
-                  accept="image/*,.pdf,.doc,.docx"
-                  className="hidden"
-                  disabled={uploadLoading}
-                />
-              </label>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center"><User className="w-5 h-5 mr-2 text-emerald-600" />Basic Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div><p className="text-sm text-gray-500">Full Name</p><p className="text-gray-900 font-medium">{student.full_name}</p></div>
+              <div><p className="text-sm text-gray-500">Father Name</p><p className="text-gray-900">{student.father_name}</p></div>
+              {student.guardian_name && <div><p className="text-sm text-gray-500">Guardian Name</p><p className="text-gray-900">{student.guardian_name}</p></div>}
+              <div><p className="text-sm text-gray-500">Status</p><span className={'inline-flex px-2 py-1 text-xs font-medium rounded-full ' + getStatusColor(student.status)}>{student.status}</span></div>
             </div>
-
-            {documents.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No documents uploaded yet</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {documents.map((document) => {
-                  const isImage = document.document_name.match(/\.(jpg|jpeg|png|gif|webp)$/i);
-                  
-                  return (
-                    <div key={document.id} className="bg-gray-50 rounded-lg p-4">
-                      {isImage ? (
-                        // Image preview
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <FileText className="h-5 w-5 text-gray-400" />
-                              <div>
-                                <p className="text-sm font-medium text-gray-900">
-                                  {document.document_name}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {new Date(document.uploaded_at).toLocaleDateString()}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center space-x-2">
-                              <a
-                                href={document.document_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-700 p-1"
-                                title="View full size"
-                              >
-                                <Download className="h-4 w-4" />
-                              </a>
-                              
-                              <button
-                                onClick={() => deleteDocument(document.id, document.document_url)}
-                                className="text-red-600 hover:text-red-700 p-1"
-                                title="Delete image"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-                          
-                          {/* Image preview */}
-                          <div className="relative">
-                            <img
-                              src={document.document_url}
-                              alt={document.document_name}
-                              className="w-full h-48 object-contain bg-gray-100 rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => window.open(document.document_url, '_blank')}
-                              onError={(e) => {
-                                const target = e.currentTarget as HTMLImageElement;
-                                const nextElement = target.nextElementSibling as HTMLElement;
-                                if (target) target.style.display = 'none';
-                                if (nextElement) nextElement.style.display = 'flex';
-                              }}
-                            />
-                            <div 
-                              className="hidden w-full h-48 bg-gray-200 rounded-lg border border-gray-200 items-center justify-center"
-                            >
-                              <div className="text-center">
-                                <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                <p className="text-sm text-gray-500">Image preview unavailable</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        // Regular file display
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3 flex-1">
-                            <FileText className="h-5 w-5 text-gray-400" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 truncate">
-                                {document.document_name}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(document.uploaded_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <a
-                              href={document.document_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-700 p-1"
-                            >
-                              <Download className="h-4 w-4" />
-                            </a>
-                            
-                            <button
-                              onClick={() => deleteDocument(document.id, document.document_url)}
-                              className="text-red-600 hover:text-red-700 p-1"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center"><Phone className="w-5 h-5 mr-2 text-emerald-600" />Contact Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-start"><Phone className="w-4 h-4 text-gray-400 mr-2 mt-1" /><div><p className="text-sm text-gray-500">Phone</p><p className="text-gray-900">{student.phone}</p></div></div>
+              {student.alternate_phone && <div className="flex items-start"><Phone className="w-4 h-4 text-gray-400 mr-2 mt-1" /><div><p className="text-sm text-gray-500">Alt Phone</p><p className="text-gray-900">{student.alternate_phone}</p></div></div>}
+              {student.email && <div className="flex items-start"><Mail className="w-4 h-4 text-gray-400 mr-2 mt-1" /><div><p className="text-sm text-gray-500">Email</p><p className="text-gray-900">{student.email}</p></div></div>}
+              {student.address && <div className="flex items-start md:col-span-2"><MapPin className="w-4 h-4 text-gray-400 mr-2 mt-1" /><div><p className="text-sm text-gray-500">Address</p><p className="text-gray-900">{student.address}</p></div></div>}
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center"><BookOpen className="w-5 h-5 mr-2 text-emerald-600" />Academic Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-start"><Calendar className="w-4 h-4 text-gray-400 mr-2 mt-1" /><div><p className="text-sm text-gray-500">Date of Joining</p><p className="text-gray-900">{new Date(student.date_of_joining).toLocaleDateString('en-IN')}</p></div></div>
+              <div><p className="text-sm text-gray-500">Academic Year</p><p className="text-gray-900">{student.academic_year}</p></div>
+              <div><p className="text-sm text-gray-500">Class Level</p><p className="text-gray-900">{student.class_level}</p></div>
+              <div><p className="text-sm text-gray-500">Roll Number</p><p className="text-gray-900">{student.roll_number}</p></div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center"><CreditCard className="w-5 h-5 mr-2 text-emerald-600" />Recent Payments</h2>
+              <Link to={feesLink} className="text-emerald-600 hover:text-emerald-800 text-sm">View All</Link>
+            </div>
+            {payments.length === 0 ? (<p className="text-gray-500 text-center py-4">No payment records</p>) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead><tr className="border-b border-gray-200"><th className="text-left py-2 text-sm font-medium text-gray-500">Month</th><th className="text-left py-2 text-sm font-medium text-gray-500">Amount</th><th className="text-left py-2 text-sm font-medium text-gray-500">Status</th><th className="text-left py-2 text-sm font-medium text-gray-500">Date</th></tr></thead>
+                  <tbody>{payments.slice(0, 6).map((p) => (<tr key={p.id} className="border-b border-gray-100"><td className="py-3 text-sm">{p.month_name} {p.year}</td><td className="py-3 text-sm">Rs.{p.amount}</td><td className="py-3"><span className={'inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ' + getPaymentStatusColor(p.payment_status)}>{getPaymentStatusIcon(p.payment_status)}<span className="ml-1">{p.payment_status}</span></span></td><td className="py-3 text-sm text-gray-500">{p.payment_date ? new Date(p.payment_date).toLocaleDateString('en-IN') : '-'}</td></tr>))}</tbody>
+                </table>
               </div>
             )}
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Fee Summary</h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center"><span className="text-gray-600">Monthly Fee</span><span className="font-semibold text-gray-900">Rs.{student.monthly_fee_amount}</span></div>
+              {(student.admission_fee_amount ?? 0) > 0 && <div className="flex justify-between items-center"><span className="text-gray-600">Admission Fee</span><span className="font-semibold text-gray-900">Rs.{student.admission_fee_amount}</span></div>}
+              <hr className="border-gray-200" />
+              <div className="flex justify-between items-center"><span className="text-gray-600">Pending Dues</span><span className={'font-semibold ' + (totalPending > 0 ? 'text-red-600' : 'text-green-600')}>Rs.{totalPending}</span></div>
+              <div className="flex justify-between items-center"><span className="text-gray-600">Pending Months</span><span className="font-semibold text-gray-900">{pendingPayments.length}</span></div>
+            </div>
+            <Link to={feesLink} className="mt-4 w-full inline-flex justify-center items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"><CreditCard className="w-4 h-4 mr-2" />Collect Fee</Link>
+          </div>
+          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg shadow-sm p-6 text-white">
+            <h3 className="text-lg font-semibold mb-4">Quick Info</h3>
+            <div className="space-y-3">
+              <div className="flex items-center"><BookOpen className="w-4 h-4 mr-3 opacity-80" /><span>{student.class_level}</span></div>
+              <div className="flex items-center"><Calendar className="w-4 h-4 mr-3 opacity-80" /><span>Joined: {new Date(student.date_of_joining).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</span></div>
+              <div className="flex items-center"><Phone className="w-4 h-4 mr-3 opacity-80" /><span>{student.phone}</span></div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
+            <div className="space-y-2">
+              <Link to={editLink} className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"><Edit className="w-4 h-4 mr-2" />Edit Student</Link>
+              <Link to={feesLink} className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"><CreditCard className="w-4 h-4 mr-2" />Fee Management</Link>
+            </div>
           </div>
         </div>
       </div>

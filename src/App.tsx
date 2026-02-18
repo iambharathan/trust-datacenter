@@ -1,15 +1,27 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+
+// Public Pages
+import Home from './pages/Home'
+import About from './pages/About'
+import Admissions from './pages/Admissions'
+import Contact from './pages/Contact'
+import Notices from './pages/Notices'
+
+// Auth Pages
 import Login from './components/Login'
 import Signup from './components/Signup'
-import Layout from './components/Layout'
+
+// Admin Components
+import AdminLayout from './components/AdminLayout'
+import Dashboard from './components/admin/Dashboard'
 import StudentsList from './components/StudentsList'
 import StudentForm from './components/StudentForm'
 import StudentDetail from './components/StudentDetail'
-import StaffList from './components/StaffList'
-import StaffForm from './components/StaffForm'
-import StaffDetail from './components/StaffDetail'
+import StudentFees from './components/StudentFees'
+import MonthlyRegister from './components/MonthlyRegister'
+import PendingDues from './components/PendingDues'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -17,7 +29,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
       </div>
     )
   }
@@ -31,17 +43,25 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
       </div>
     )
   }
 
-  return user ? <Navigate to="/students" /> : <>{children}</>
+  return user ? <Navigate to="/admin" /> : <>{children}</>
 }
 
 function AppRoutes() {
   return (
     <Routes>
+      {/* Public Website Routes */}
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/admissions" element={<Admissions />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/notices" element={<Notices />} />
+
+      {/* Auth Routes */}
       <Route
         path="/login"
         element={
@@ -50,7 +70,6 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
-      
       <Route
         path="/signup"
         element={
@@ -59,96 +78,92 @@ function AppRoutes() {
           </PublicRoute>
         }
       />
-      
+
+      {/* Admin Routes */}
       <Route
-        path="/students"
+        path="/admin"
         element={
           <PrivateRoute>
-            <Layout>
+            <AdminLayout>
+              <Dashboard />
+            </AdminLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin/students"
+        element={
+          <PrivateRoute>
+            <AdminLayout>
               <StudentsList />
-            </Layout>
+            </AdminLayout>
           </PrivateRoute>
         }
       />
-      
       <Route
-        path="/students/new"
+        path="/admin/students/new"
         element={
           <PrivateRoute>
-            <Layout>
+            <AdminLayout>
               <StudentForm />
-            </Layout>
+            </AdminLayout>
           </PrivateRoute>
         }
       />
-      
       <Route
-        path="/students/:id"
+        path="/admin/students/:id"
         element={
           <PrivateRoute>
-            <Layout>
+            <AdminLayout>
               <StudentDetail />
-            </Layout>
+            </AdminLayout>
           </PrivateRoute>
         }
       />
-      
       <Route
-        path="/students/:id/edit"
+        path="/admin/students/:id/edit"
         element={
           <PrivateRoute>
-            <Layout>
+            <AdminLayout>
               <StudentForm />
-            </Layout>
+            </AdminLayout>
           </PrivateRoute>
         }
       />
-      
       <Route
-        path="/staff"
+        path="/admin/students/:id/fees"
         element={
           <PrivateRoute>
-            <Layout>
-              <StaffList />
-            </Layout>
+            <AdminLayout>
+              <StudentFees />
+            </AdminLayout>
           </PrivateRoute>
         }
       />
-      
       <Route
-        path="/staff/new"
+        path="/admin/fees"
         element={
           <PrivateRoute>
-            <Layout>
-              <StaffForm />
-            </Layout>
+            <AdminLayout>
+              <MonthlyRegister />
+            </AdminLayout>
           </PrivateRoute>
         }
       />
-      
       <Route
-        path="/staff/:id"
+        path="/admin/fees/pending"
         element={
           <PrivateRoute>
-            <Layout>
-              <StaffDetail />
-            </Layout>
+            <AdminLayout>
+              <PendingDues />
+            </AdminLayout>
           </PrivateRoute>
         }
       />
-      
-      <Route
-        path="/staff/:id/edit"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <StaffForm />
-            </Layout>
-          </PrivateRoute>
-        }
-      />
-      
-      <Route path="/" element={<Navigate to="/students" />} />
+
+      {/* Redirect old routes */}
+      <Route path="/students" element={<Navigate to="/admin/students" />} />
+      <Route path="/students/*" element={<Navigate to="/admin/students" />} />
     </Routes>
   )
 }
